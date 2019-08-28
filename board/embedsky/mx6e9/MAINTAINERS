@@ -1,0 +1,6 @@
+MX6EMBEDSKY BOARD
+M:	Ovidiu Mihalachi <ovidiu.mihalachi@gmail.com>
+S:	Maintained
+F:	board/embedsky/mx6e9/
+F:	include/configs/mx6e9.h
+F:	configs/mx6embedsky_defconfig
