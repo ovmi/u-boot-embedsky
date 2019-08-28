@@ -207,6 +207,15 @@ config TARGET_DISPLAY5
 	select DM
 	select DM_SERIAL
 
+config TARGET_MX6EMBEDSKY
+	bool "Embedsky E9 MiniPC"
+        select MX6QDL
+        select BOARD_LATE_INIT
+        select SUPPORT_SPL
+        select DM
+        select DM_THERMAL
+        select BOARD_EARLY_INIT_F
+
 config TARGET_EMBESTMX6BOARDS
 	bool "embestmx6boards"
 	select BOARD_LATE_INIT
@@ -628,6 +637,7 @@ source "board/compulab/cm_fx6/Kconfig"
 source "board/congatec/cgtqmx6eval/Kconfig"
 source "board/dhelectronics/dh_imx6/Kconfig"
 source "board/el/el6x/Kconfig"
+source "board/embedsky/mx6e9/Kconfig"
 source "board/embest/mx6boards/Kconfig"
 source "board/engicam/imx6q/Kconfig"
 source "board/engicam/imx6ul/Kconfig"

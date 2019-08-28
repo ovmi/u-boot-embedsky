@@ -1,0 +1,12 @@
+if TARGET_MX6EMBEDSKY
+
+config SYS_BOARD
+	default "mx6e9"
+
+config SYS_VENDOR
+	default "embedsky"
+
+config SYS_CONFIG_NAME
+	default "mx6e9"
+
+endif
