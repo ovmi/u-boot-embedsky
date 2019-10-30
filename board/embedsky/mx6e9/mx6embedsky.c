@@ -537,48 +537,54 @@ int board_eth_init(bd_t *bis)
 }
 
 #ifdef CONFIG_USB_EHCI_MX6
+#define USB_OTG_VBUS_DET	IMX_GPIO_NR(7, 0)
+#define USB_OTG_PWR_EN		IMX_GPIO_NR(7, 1)
 #define USB_OTHERREGS_OFFSET	0x800
 #define UCTRL_PWR_POL		(1 << 9)
 
 static iomux_v3_cfg_t const usb_otg_pads[] = {
 	IOMUX_PADS(PAD_SD3_DAT4__GPIO7_IO01 | MUX_PAD_CTRL(NO_PAD_CTRL)),
 	IOMUX_PADS(PAD_ENET_RX_ER__USB_OTG_ID | MUX_PAD_CTRL(OTG_ID_PAD_CTRL)),
+	IOMUX_PADS(PAD_SD3_DAT5__GPIO7_IO00 | MUX_PAD_CTRL(NO_PAD_CTRL))
 };
-
-static void setup_usb(void)
-{
-	SETUP_IOMUX_PADS(usb_otg_pads);
-}
 
 int board_ehci_hcd_init(int port)
 {
-	u32 *usbnc_usb_ctrl;
+        u32 *usbnc_usb_ctrl;
 
-	if (port > 1)
-		return -EINVAL;
+        switch (port) {
+        case 0:
+                SETUP_IOMUX_PADS(usb_otg_pads);
 
-	usbnc_usb_ctrl = (u32 *)(USB_BASE_ADDR + USB_OTHERREGS_OFFSET +
-				 port * 4);
+                /*
+                  * Set daisy chain for otg_pin_id on 6q.
+                 *  For 6dl, this bit is reserved.
+                 */
+                imx_iomux_set_gpr_register(1, 13, 1, 0);
 
-	setbits_le32(usbnc_usb_ctrl, UCTRL_PWR_POL);
+                usbnc_usb_ctrl = (u32 *)(USB_BASE_ADDR + USB_OTHERREGS_OFFSET +
+                                 port * 4);
 
-	return 0;
+                setbits_le32(usbnc_usb_ctrl, UCTRL_PWR_POL);
+                break;
+        case 1:
+                break;
+        default:
+                printf("MXC USB port %d not yet supported\n", port);
+                return -EINVAL;
+        }
+
+        return 0;
 }
 
 int board_ehci_power(int port, int on)
 {
-	/* Embedsky E9 has the line USB_H1_VBUS directly tied up to 5VDD */
-
 	switch (port) {
 	case 0:
+		gpio_direction_output(USB_OTG_PWR_EN, on);
 		break;
 	case 1:
-#if 0
-		if (on)
-			gpio_direction_output(IMX_GPIO_NR(1, 29), 1);
-		else
-			gpio_direction_output(IMX_GPIO_NR(1, 29), 0);
-#endif
+		/* Embedsky E9 has the line USB_H1_VBUS directly tied up to 5VDD */
 		break;
 	default:
 		printf("MXC USB port %d not yet supported\n", port);
@@ -625,9 +631,6 @@ int board_init(void)
 
 #if defined(CONFIG_VIDEO_IPUV3)
 	setup_display();
-#endif
-#ifdef CONFIG_USB_EHCI_MX6
-	setup_usb();
 #endif
 
 	return 0;
